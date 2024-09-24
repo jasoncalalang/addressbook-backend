@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: addressbook-config
+data:
+  MONGODB_URI: "mongodb://127.0.0.1:27017/addressbook"
+  PORT: "5000"

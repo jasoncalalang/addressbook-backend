@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: addressbook-backend
+  labels:
+    app: addressbook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: addressbook
+  template:
+    metadata:
+      labels:
+        app: addressbook
+    spec:
+      imagePullSecrets:
+      - name: icr
+      containers:
+      - name: backend
+        image: jp.icr.io/jcc-dev/ab-backend:1.0
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MONGODB_URI
+          valueFrom:
+            configMapKeyRef:
+              name: addressbook-config
+              key: MONGODB_URI
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: addressbook-config
+              key: PORT
+        - name: APPID_AUDIENCE
+          valueFrom:
+            secretKeyRef:
+              name: addressbook-secret
+              key: APPID_AUDIENCE
+        - name: APPID_ISSUER
+          valueFrom:
+            secretKeyRef:
+              name: addressbook-secret
+              key: APPID_ISSUER
+        - name: APPID_JWKS_URI
+          valueFrom:
+            secretKeyRef:
+              name: addressbook-secret
+              key: APPID_JWKS_URI
