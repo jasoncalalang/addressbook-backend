@@ -17,7 +17,6 @@ router.post('/', async (req, res) => {
 // Get all contacts
 router.get('/', async (req, res) => {
   try {
-    console.log('Authenticated user:', req.user);
     const contacts = await Contact.find();
     res.json(contacts);
   } catch (err) {
@@ -44,9 +43,11 @@ router.put('/:id', getContact, async (req, res) => {
 // Delete a contact
 router.delete('/:id', getContact, async (req, res) => {
   try {
-    await res.contact.remove();
+    // Use findByIdAndDelete instead of remove
+    await Contact.findByIdAndDelete(req.params.id);
     res.json({ message: 'Deleted Contact' });
   } catch (err) {
+    console.error('Error deleting contact:', err); // Log the error for debugging
     res.status(500).json({ message: err.message });
   }
 });
