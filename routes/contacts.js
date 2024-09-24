@@ -17,6 +17,7 @@ router.post('/', async (req, res) => {
 // Get all contacts
 router.get('/', async (req, res) => {
   try {
+    console.log('Authenticated user:', req.user);
     const contacts = await Contact.find();
     res.json(contacts);
   } catch (err) {

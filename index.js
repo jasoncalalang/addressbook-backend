@@ -28,6 +28,16 @@ const contactsRouter = require('./routes/contacts');
 // Apply the authentication middleware to the contacts routes
 app.use('/contacts', authMiddleware, contactsRouter);
 
+// Error handling middleware for authentication errors
+app.use((err, req, res, next) => {
+  if (err.name === 'UnauthorizedError') {
+    // JWT authentication error
+    res.status(401).json({ message: 'Invalid or missing token' });
+  } else {
+    next(err);
+  }
+});
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
