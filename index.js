@@ -1,45 +1,56 @@
-require('dotenv').config(); // Load environment variables from .env file
-
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const authMiddleware = require('./middleware/auth'); // Import the auth middleware
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Swagger definition
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Address Book API',
+    version: '1.0.0',
+    description: 'API documentation for the Address Book application',
+  },
+  servers: [
+    {
+      url: 'http://localhost:5000', // Change this to your API server
+      description: 'Local server',
+    },
+  ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT', // Optional, indicates that the token is a JWT
+      },
+    },
+  },
+  security: [
+    {
+      bearerAuth: [], // Applies the Bearer token security globally
+    },
+  ],
+};
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/addressbook', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+// Options for the swagger docs
+const options = {
+  swaggerDefinition,
+  apis: ['./routes/*.js'], // Path to the API docs (point to your routes)
+};
 
-const connection = mongoose.connection;
+// Initialize swagger-jsdoc
+const swaggerSpec = swaggerJsdoc(options);
 
-connection.once('open', () => {
-  console.log('MongoDB database connection established successfully');
-});
+// Swagger UI setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Routes
-const contactsRouter = require('./routes/contacts');
-
-// Apply the authentication middleware to the contacts routes
-app.use('/contacts', authMiddleware, contactsRouter);
-
-// Error handling middleware for authentication errors
-app.use((err, req, res, next) => {
-  if (err.name === 'UnauthorizedError') {
-    // JWT authentication error
-    res.status(401).json({ message: 'Invalid or missing token' });
-  } else {
-    next(err);
-  }
-});
+// Your routes and middleware here...
 
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
 });
